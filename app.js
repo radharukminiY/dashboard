@@ -132,7 +132,7 @@ app.put('/activateUser',(req,res) => {
 })
 
 
-MongoClient.connect(mongourl,(err,connection) => {
+MongoClient.connect(mongourl, { useUnifiedTopology: true },(err,connection) => {
     if(err) console.log(err);
     db = connection.db('node');
     app.listen(port,(err) => {
