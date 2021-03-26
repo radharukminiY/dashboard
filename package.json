@@ -4,8 +4,9 @@
   "description": "dashboard",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "mocha --timeout 20000"
   },
   "author": "rr",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
+    "mocha": "^8.3.2",
     "mongodb": "^3.6.4",
     "mongoose": "^5.11.15",
     "request": "^2.88.2",
