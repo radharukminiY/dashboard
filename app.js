@@ -1,11 +1,11 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 9800;
+const port = process.env.PORT || 9080;
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const mongourl = `mongodb+srv://admin:mongo@123@cluster0-f8vmc.mongodb.net/hotels?retryWrites=true&w=majority`;
+const mongourl = "mongodb://localhost:27017";
 let db;
 let col_name="userdata";
 
@@ -134,7 +134,7 @@ app.put('/activateUser',(req,res) => {
 
 MongoClient.connect(mongourl,(err,connection) => {
     if(err) console.log(err);
-    db = connection.db('jannode');
+    db = connection.db('node');
     app.listen(port,(err) => {
         console.log(`Server is running on port ${port}`)
     })

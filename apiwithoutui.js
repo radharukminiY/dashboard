@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 9900;
+const port = process.env.PORT || 9080;
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
 const bodyParser = require('body-parser');
@@ -112,7 +112,7 @@ app.put('/activateUser',(req,res) => {
 
 MongoClient.connect(mongourl,(err,connection) => {
     if(err) console.log(err);
-    db = connection.db('jannode');
+    db = connection.db('node');
     app.listen(port,(err) => {
         console.log(`Server is running on port ${port}`)
     })
