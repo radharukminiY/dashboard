@@ -3,85 +3,94 @@ const app = express();
 const port = process.env.PORT || 9080;
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
-const bodyParser = require('body-parser');
+const bodParser = require('body-parser');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const mongourl = "mongodb://localhost:27017";
 let db;
-let col_name="userdata";
-
+let col_name = "user";
 app.use(cors());
+///parse data for post call
 app.use(bodyParser.urlencoded({extended:true}));
-app.use(bodyParser.json());
+app.use(bodParser.json())
 app.use(express.static(__dirname+'/public'));
-app.set('views','./src/views');
+app.set('views','./views');
 app.set('view engine','ejs');
 
-//health
-app.get('/',(req,res) => {
-    db.collection(col_name).find({isActive:true}).toArray((err,result) => {
-        if(err) throw err;
-        res.render('index',{data:result})
-    })
-})
-
+// Health Check
 app.get('/health',(req,res) => {
     res.status(200).send("Health Ok")
 })
 
+// Home page
+app.get('/',(req,res) => {
+    db.collection(col_name).find().toArray((err,result) => {
+        if(err) throw err;
+       res.render('index',{data:result})
+    })
+})
+
+// Add user
 app.get('/new',(req,res) => {
     res.render('admin')
 })
 
-//postUser
+// post User
 app.post('/addUser',(req,res) => {
-    const data={
-        "name":req.body.name,
-        "city":req.body.city,
-        "phone":req.body.phone,
-        "isActive":true,
-        "role":req.body.role?req.body.role:'User'
+    console.log(req.body)
+    var data ={
+        "name": req.body.name,
+        "email": req.body.email,
+        "city": req.body.city,
+        "role": req.body.role?req.body.role:'User',
+        "isActive": req.body.isActive?req.body.isActive:true
     }
     db.collection(col_name).insert(data,(err,result) => {
         if(err) throw err;
-        //res.status(200).send("Data Added")
         res.redirect('/')
     })
-});
+})
 
-//get user
+// getAllUser
 app.get('/users',(req,res) => {
     var query = {}
-    if(req.query.city){
-        query={city:req.query.city,isActive:true}
-    }else{
-        query={isActive:true}
+    if(req.query.city && req.query.role){
+        query = {city:req.query.city,isActive:true,role:req.query.role}
+    }
+    else if(req.query.city){
+        query = {city:req.query.city,isActive:true}
+    }else if(req.query.role){
+        query = {role:req.query.role,isActive:true}
     }
     db.collection(col_name).find(query).toArray((err,result) => {
         if(err) throw err;
-        res.send(result)
+        res.status(200).send(result)
     })
 })
 
-//userDetails
+// get Particular Use
 app.get('/user/:id',(req,res) => {
     var id = mongo.ObjectID(req.params.id)
-    db.collection(col_name).find({_id:id}).toArray((err,result) => {
+    var query = {};
+    query = {_id:id}
+    db.collection(col_name).findOne(query,(err,result)=> {
         if(err) throw err;
         res.send(result)
     })
 })
-//updateUser
+
+// update user
 app.put('/updateUser',(req,res) => {
-    var id = mongo.ObjectID(req.body._id)
+    let id = req.body._id
     db.collection(col_name).update(
-        {_id:id},
+        {_id:mongo.ObjectID(id)},
         {
             $set:{
-                name:req.body.name,
-                city:req.body.city,
-                phone:req.body.phone,
-                role:req.body.role,
-                isActive:true
+                name: req.body.name,
+                email: req.body.email,
+                city: req.body.city,
+                role: req.body.role,
+                isActive: req.body.isActive?req.body.isActive:true
             }
         },(err,result) => {
             if(err) throw err;
@@ -90,39 +99,23 @@ app.put('/updateUser',(req,res) => {
     )
 })
 
-//remove
+//delete(hard Delete)
 app.delete('/deleteUser',(req,res) => {
-    var id = mongo.ObjectID(req.body._id)
-    db.collection(col_name).remove({_id:id},(err,result) => {
+    let Id = mongo.ObjectID(req.body._id);
+    db.collection(col_name).remove({_id:Id},(err,result) => {
         if(err) throw err;
-        res.send('Data Deleted')
+        res.send("Data Deleted")
     })
 })
 
-//deactivate(soft delete)
-app.put('/deactivateUser',(req,res) => {
-    var id = mongo.ObjectID(req.body._id)
-    db.collection(col_name).update(
-        {_id:id},
-        {
-            $set:{
-                isActive:false
-            }
-        },(err,result) => {
-            if(err) throw err;
-            res.send('User Deactivated')
-        }
-    )
-})
-
-//activate(soft delete)
+//activate user
 app.put('/activateUser',(req,res) => {
-    var id = mongo.ObjectID(req.body._id)
+    let id = req.body._id
     db.collection(col_name).update(
-        {_id:id},
+        {_id:mongo.ObjectID(id)},
         {
             $set:{
-                isActive:true
+                isActive: true
             }
         },(err,result) => {
             if(err) throw err;
@@ -131,11 +124,30 @@ app.put('/activateUser',(req,res) => {
     )
 })
 
+//deactivate user (soft Delete)
+app.put('/deactivateUser',(req,res) => {
+    let id = req.body._id
+    db.collection(col_name).update(
+        {_id:mongo.ObjectID(id)},
+        {
+            $set:{
+                isActive: false
+            }
+        },(err,result) => {
+            if(err) throw err;
+            res.send('User Deactivated')
+        }
+    )
+})
 
-MongoClient.connect(mongourl, { useUnifiedTopology: true },(err,connection) => {
+
+MongoClient.connect(mongourl,(err,connection)=>{
     if(err) console.log(err);
-    db = connection.db('node');
-    app.listen(port,(err) => {
-        console.log(`Server is running on port ${port}`)
-    })
+    db = connection.db('marchnode');
+})
+
+//start server
+app.listen(port,(err) => {
+    if(err) throw err;
+    console.log(`Server is running on port ${port}`)
 })
