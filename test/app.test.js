@@ -6,13 +6,11 @@ chai.use(chaiHttp);
 describe("Testing RestApi",() => {
     it('Should return status 200',(done) => {
         chai.request(`http://localhost:9080`)
-        .get('/health')
+        .get('/')
         .then((res) => {
             expect(res).to.have.status(200);
             done();
         })
-        .catch((err) => {
-            throw err
-        })
+        .catch(done)
     })
 })
