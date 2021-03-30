@@ -119,7 +119,7 @@ app.put('/deactivateUser',(req,res) => {
 })
 
 
-MongoClient.connect(mongourl,(err,connection)=>{
+MongoClient.connect(mongourl,{ useUnifiedTopology: true },(err,connection)=>{
     if(err) console.log(err);
     db = connection.db('marchnode');
 })
